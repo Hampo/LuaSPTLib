@@ -28,7 +28,7 @@ You can find complete mods... Nowhere because I haven't made any yet.
 
 ### Fixing the Audi TT invalid engine sound
 1. Add `RequiredHack=FileSystemRCFs` to your `Meta.ini`.
-  - *This is required because the sound scripts are embedded in `.rcf` files, and to `ReadFile` then you must extract the files to the Virtual File System.*
+  - *This is required because the sound scripts are embedded in `.rcf` files, and to `ReadFile` them you must extract the files to the Virtual File System.*
 2. Add a `PathHandler` to your `CustomFiles.ini` for `sound/scripts/car_tune.spt`.
 3. In the `PathHandler`'s Lua file, use the following:
 ```lua
