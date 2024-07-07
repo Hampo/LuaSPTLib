@@ -42,7 +42,7 @@ local SPT = SPTParser.SPTFile(GamePath)
 -- Loop through all `carSoundParameters`
 for carSoundParameters in SPT:GetClasses("carSoundParameters") do
 	-- Loop all `SetEngineClipName` methods
-	for SetEngineClipName in carSoundParameters:GetMethods("SetEngineClipName") do
+	for SetEngineClipName in carSoundParameters:GetMethods(nil, "SetEngineClipName") do
 		--- If the filename is `tt` (which doesn't exist), replace with `apu_car`
 		if SetEngineClipName.Parameters[1] == "tt" then
 			SetEngineClipName.Parameters[1] = "apu_car"
@@ -50,7 +50,7 @@ for carSoundParameters in SPT:GetClasses("carSoundParameters") do
 	end
 	
 	-- Repeat for `SetEngineIdleClipName`
-	for SetEngineIdleClipName in carSoundParameters:GetMethods("SetEngineIdleClipName") do
+	for SetEngineIdleClipName in carSoundParameters:GetMethods(nil, "SetEngineIdleClipName") do
 		--- If the filename is `tt` (which doesn't exist), replace with `apu_car`
 		if SetEngineIdleClipName.Parameters[1] == "tt" then
 			SetEngineIdleClipName.Parameters[1] = "apu_car"
