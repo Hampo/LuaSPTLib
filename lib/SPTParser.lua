@@ -228,6 +228,12 @@ function SPTParser.SPTFile:GetClass(Type, Backwards, Name)
 	return self:GetClasses(Type, Backwards, Name)()
 end
 
+function SPTParser.SPTFile:AddClass(ClassType, ClassName)
+	local class = SPTParser.Class(ClassType, ClassName)
+	self.Classes[#self.Classes + 1] = class
+	return class
+end
+
 function SPTParser.SPTFile:RemoveClass(Index)
 	assert(type(Index) == "number", "Arg #1 (Index) must be a number.")
 	assert(Index > 0 and Index <= #self.Classes, "Arg #1 (Index) out of bounds.")
