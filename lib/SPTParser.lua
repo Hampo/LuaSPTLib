@@ -182,11 +182,10 @@ end
 local function LoadSPTFile(self, Path)
 	if Path == nil then
 		self.__index = self
-		return setmetatable({}, self)
+		return setmetatable({Classes = {}}, self)
 	else
 		local success, contents = pcall(ReadFile, Path)
 		assert(success, string_format("Failed to read file at '%s': %s", Path, contents))
-		
 		
 		return LoadSPTFromData(self, contents)
 	end
