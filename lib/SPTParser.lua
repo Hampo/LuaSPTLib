@@ -132,6 +132,8 @@ do
 				knownClass[name] = method
 			end
 			
+			local parameterPattern = {}
+			local parameterFormat = {"    %s ( "}
 			for i=1,numParams do
 				paramName, paramType, indirectLevel, pos = string.unpack("<s4s4I", srrtypes, pos)
 				paramName = NullTerminate(paramName)
@@ -139,6 +141,18 @@ do
 				
 				assert(knownClass == nil or TypeMap[paramType], "Unknown param type: " .. paramType)
 				method[i] = { paramName, paramType }
+				
+				if knownClass then
+					parameterPattern[i] = TypePatternMap[paramType]
+					parameterFormat[i + 1] = TypeFormatMap[paramType] .. " "
+				end
+				
+			end
+			parameterFormat[numParams + 2] = ")"
+			
+			if knownClass then
+				method.ParameterPattern = table_concat(parameterPattern, "%s+")
+				method.ParameterFormat = table_concat(parameterFormat)
 			end
 		elseif token == TokenType.Enum then
 			local name, numEnum, literalName, literalValue
@@ -315,17 +329,8 @@ SPTParser.Class = setmetatable({}, {
 							assert(#methodParameters == 0, string_format("Method \"%s->%s\" should have no parameters, but some where specified.", classType, methodName))
 							method.Parameters = {}
 						else
-							local parameterPattern = {}
-							for i=1,numParameters do
-								local param = knownMethod[i]
-								local paramType = param[2]
-								
-								local pattern = TypePatternMap[paramType]
-								assert(pattern, string_format("Unknown param type: %s", paramType))
-								
-								parameterPattern[i] = pattern
-							end
-							parameterPattern = table_concat(parameterPattern, "%s+")
+							local parameterPattern = knownMethod.ParameterPattern
+							assert(parameterPattern, string_format("Method \"%s->%s\" does not have Lua compatible parameters.", classType, methodName))
 							
 							local parameters = {string_match(methodParameters, "^" .. parameterPattern .. "$")}
 							assert(#parameters == numParameters, string_format("Method \"%s->%s\" should have %i parameters.", classType, methodName, numParameters))
@@ -444,21 +449,9 @@ function SPTParser.Class:__tostring()
 		assert(knownMethod, string_format("Unknown method: %s->%s", self.Type, method.Name))
 		local numParameters = #knownMethod
 		assert(numParameters == #method.Parameters, string_format("Method \"%s->%s\" expects %i parameters. %i parameters found.", self.Type, method.Name, numParameters, #method.Parameters))
+		local parameterFormat = knownMethod.ParameterFormat
+		assert(parameterFormat, string_format("Method \"%s->%s\" does not have Lua compatible parameters.", classType, methodName))
 		
-		local parameterFormat = {"    %s ( "}
-		local parameterFormatN = 1
-		for j=1,numParameters do
-			local paramType = knownMethod[j][2]
-			local parameter = method.Parameters[j]
-			assert(type(parameter) == TypeMap[paramType], string_format("Method \"%s->%s\" expects parameter %i (%s) to be: %s. Got %s", self.Type, method.Name, j, knownMethod[j][1], TypeMap[paramType], type(parameter)))
-			
-			parameterFormatN = parameterFormatN + 1
-			parameterFormat[parameterFormatN] = TypeFormatMap[paramType] .. " "
-		end
-		parameterFormatN = parameterFormatN + 1
-		parameterFormat[parameterFormatN] = ")"
-		
-		parameterFormat = table_concat(parameterFormat)
 		local methodStr = string_format(parameterFormat, method.Name, table_unpack(method.Parameters))
 		if method.Option then
 			methodStr = string_format("%s option %s", methodStr, method.Option)
